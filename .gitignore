@@ -1,0 +1,42 @@
+# Go binaries
+/api
+*.exe
+*.exe~
+*.dll
+*.so
+*.dylib
+*.test
+*.out
+*.mod
+*.sum
+
+# Go coverage
+*.cover
+*.cov
+coverage.*
+
+# Build / cache
+bin/
+dist/
+
+# Logs
+*.log
+
+# Env files
+go.mod
+go.sum
+.env
+.env.local
+.env.*
+!.env.example
+
+# IDE / editor
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+
+# OS junk
+.DS_Store
+Thumbs.db
