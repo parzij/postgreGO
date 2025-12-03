@@ -77,9 +77,9 @@ func (hand *Handler) CreateUser(write http.ResponseWriter, req *http.Request) {
 	}
 
 	user := User{
-		Name:     input.Name,
-		Age:      input.Age,
-		Email:    email,
+		Name: input.Name,
+		Age: input.Age,
+		Email: email,
 		Password: input.Password,
 	}
 
