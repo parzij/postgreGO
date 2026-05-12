@@ -1,0 +1,157 @@
+basePath: /
+definitions:
+  users.CreateUserRequest:
+    description: Данные, которые клиент отправляет при регистрации
+    properties:
+      age:
+        maximum: 99
+        minimum: 1
+        type: integer
+      email:
+        format: email
+        type: string
+      name:
+        minLength: 1
+        type: string
+      password:
+        minLength: 8
+        type: string
+    type: object
+  users.ErrorResponse:
+    description: Возвращается при ошибках валидации или сервера
+    properties:
+      error:
+        type: string
+    type: object
+  users.UserResponse:
+    description: Безопасная версия пользователя для отправки клиенту
+    properties:
+      age:
+        type: integer
+      email:
+        type: string
+      id:
+        type: integer
+      name:
+        type: string
+    type: object
+host: localhost:9090
+info:
+  contact: {}
+  description: Учебный backend-сервис на Go + GORM + PostgreSQL для работы с пользователями
+  title: postgreGO API
+  version: "1.0"
+paths:
+  /users:
+    get:
+      description: Возвращает массив всех зарегистрированных пользователей
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: Список пользователей (пустой массив, если нет данных)
+          schema:
+            items:
+              $ref: '#/definitions/users.UserResponse'
+            type: array
+        "500":
+          description: Ошибка базы данных
+          schema:
+            $ref: '#/definitions/users.ErrorResponse'
+      summary: Получить список пользователей
+      tags:
+      - users
+    post:
+      consumes:
+      - application/json
+      description: 'Регистрация нового пользователя с валидацией: возраст 1-99, пароль
+        ≥8 символов, email с разрешённым доменом'
+      parameters:
+      - description: Данные для регистрации
+        in: body
+        name: user
+        required: true
+        schema:
+          $ref: '#/definitions/users.CreateUserRequest'
+      produces:
+      - application/json
+      responses:
+        "201":
+          description: Пользователь успешно создан
+          schema:
+            $ref: '#/definitions/users.UserResponse'
+        "400":
+          description: 'Неверный запрос: валидация или формат JSON'
+          schema:
+            $ref: '#/definitions/users.ErrorResponse'
+        "500":
+          description: Ошибка базы данных
+          schema:
+            $ref: '#/definitions/users.ErrorResponse'
+      summary: Создать пользователя
+      tags:
+      - users
+  /users/{id}:
+    delete:
+      description: Удаляет пользователя из базы данных по указанному ID
+      parameters:
+      - description: ID пользователя
+        in: path
+        minimum: 1
+        name: id
+        required: true
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "204":
+          description: Пользователь успешно удалён
+        "400":
+          description: Неверный формат ID
+          schema:
+            $ref: '#/definitions/users.ErrorResponse'
+        "404":
+          description: Пользователь не найден
+          schema:
+            $ref: '#/definitions/users.ErrorResponse'
+        "500":
+          description: Ошибка базы данных
+          schema:
+            $ref: '#/definitions/users.ErrorResponse'
+      summary: Удалить пользователя
+      tags:
+      - users
+    get:
+      description: Возвращает данные пользователя, если он существует в БД
+      parameters:
+      - description: ID пользователя
+        in: path
+        minimum: 1
+        name: id
+        required: true
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/users.UserResponse'
+        "400":
+          description: Неверный формат ID
+          schema:
+            $ref: '#/definitions/users.ErrorResponse'
+        "404":
+          description: Пользователь не найден
+          schema:
+            $ref: '#/definitions/users.ErrorResponse'
+        "500":
+          description: Ошибка базы данных
+          schema:
+            $ref: '#/definitions/users.ErrorResponse'
+      summary: Получить пользователя по ID
+      tags:
+      - users
+schemes:
+- http
+swagger: "2.0"
