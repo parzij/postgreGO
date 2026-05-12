@@ -11,6 +11,17 @@
 
 ---
 
+## Документация API
+
+Проект включает интерактивную документацию **Swagger UI**:
+
+- **URL**: `http://localhost:9090/swagger/index.html`
+- **Спецификация**: `http://localhost:9090/swagger/doc.json`
+
+Документация генерируется автоматически с помощью [`swaggo/swag`](https://github.com/swaggo/swag).
+
+---
+
 ## Архитектура проекта
 
 Проект организован по «взрослой» схеме: точка входа в `cmd/`, бизнес-логика и инфраструктура в `internal/`.
@@ -22,17 +33,17 @@
 │     └─ main.go           # Точка входа: загрузка .env, конфиг, БД, роутер
 ├─ internal/
 │  ├─ config/
-│  │  └─ config.go         # Загрузка конфигурации из переменных окружения
+│  │  └─ config.go         # Загрузка конфигурации из .env
 │  ├─ database/
 │  │  └─ database.go       # Инициализация GORM + PostgreSQL
 │  └─ users/
 │     ├─ model.go          # Модель User (ID, Name, Age, Email, Password)
-│     └─ handlers.go       # HTTP-хендлеры и роуты для работы с пользователями
-├─ .env                    # Локальные переменные окружения (в git не коммитим)
+│     └─ handlers.go       # HTTP-хендлеры и роуты
+├─ .env                    
 ├─ go.mod
 ├─ go.sum
 └─ README.md
-````
+```
 
 ### Что делает каждый слой
 
@@ -42,19 +53,17 @@
   * Читает конфиг через `config.LoadConfig()`.
   * Создаёт подключение к БД через `database.New()`.
   * Запускает миграцию `AutoMigrate(&users.User{})`.
-  * Поднимает HTTP-сервер на `:8080` c роутером `chi`.
+  * Поднимает HTTP-сервер на порту из `APP_PORT` (по умолчанию `:9090`) c роутером `chi`.
 
 * **`internal/config/config.go`**
 
   * Читает переменные окружения:
-
     * `HOST_DB`, `PORT_DB`, `USER_DB`, `PASSWORD_DB`, `NAME_DB`, `SSLMODE_DB`.
   * Проверяет, что все параметры заданы, иначе возвращает ошибку.
 
 * **`internal/database/database.go`**
 
   * Собирает DSN для PostgreSQL:
-
     ```text
     host=... user=... password=... dbname=... port=... sslmode=...
     ```
@@ -63,7 +72,6 @@
 * **`internal/users/model.go`**
 
   * Описывает структуру `User`:
-
     ```go
     type User struct {
         ID       uint   `json:"id" gorm:"primaryKey"`
@@ -79,28 +87,12 @@
 
   * `Handler` хранит `*gorm.DB`.
   * `RegisterRoutes` вешает маршруты:
-
     * `POST   /users`      — создать пользователя;
     * `GET    /users`      — список пользователей;
     * `GET    /users/{id}` — получить пользователя по ID;
     * `DELETE /users/{id}` — удалить пользователя.
   * В `CreateUser`:
-
     * нормализует email (`strings.ToLower`, `TrimSpace`);
     * проверяет формат email и домен (только `gmail.com`, `yandex.ru`, `mail.ru`, `yahoo.com`);
     * проверяет возраст и длину пароля;
     * сохраняет пользователя через `DB.Create(&user)`.
-
----
-
-
-
-## Идеи для развития
-
-* Обновление пользователя (`PUT /users/{id}`).
-* Хеширование пароля вместо хранения в открытом виде.
-* Пагинация и фильтрация списка пользователей.
-* JWT-авторизация и простая регистрация/логин.
-* Docker-compose для поднятия Go + PostgreSQL в контейнерах.
-
-
